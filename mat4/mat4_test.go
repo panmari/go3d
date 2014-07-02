@@ -2,6 +2,9 @@ package mat4
 
 import (
 	"testing"
+	"github.com/ungerik/go3d/mat3"
+	"github.com/ungerik/go3d/vec3"
+	"github.com/ungerik/go3d/vec4"
 )
 
 const EPSILON = 0.0001
@@ -51,6 +54,28 @@ func TestDeterminant(t *testing.T) {
 	
 	if det := randomMatrix.Determinant(); det - 0.012208 > EPSILON {
 		t.Errorf("Wrong determinant for random matrix: %f", det)
+	}
+}
+
+func TestInvert(t *testing.T) {
+	row123changed,_ := Parse("3.00000     1.00000     0.50000     0.00000     2.00000     5.00000     2.00000     0.00000     1.00000     6.00000     7.00000     0.00000     2.00000   100.00000	 1.00000     1.00000")
+	blocked_expected := mat3.T{vec3.T{5, 2, 0}, vec3.T{6, 7, 0}, vec3.T{100, 1, 1}}
+	if blocked := row123changed.maskedBlock(0,0); *blocked != blocked_expected {
+		t.Errorf("Did not block 0,0 correctly: %#v", blocked)
+	}
+	
+	adj_expected := T{vec4.T{23, -4, -0.5, -0}, vec4.T{-12, 20.5, -5, 0}, vec4.T{7, -17, 13, -0}, vec4.T{1147, -2025, 488, 60.5}}	
+	adj := row123changed
+	adj.Adjugate()
+	if adj != adj_expected {
+		t.Errorf("Adjugate not computed correctly: %#v", adj)
+	}
+	
+	inv_expected :=  T{vec4.T{0.38016528, -0.0661157, -0.008264462, -0}, vec4.T{-0.19834709, 0.33884296, -0.08264463, 0}, vec4.T{0.11570247, -0.28099173, 0.21487603, -0}, vec4.T{18.958677, -33.471073, 8.066115, 0.99999994}}
+	inv := row123changed
+	inv.Invert()
+	if inv != inv_expected {
+		t.Errorf("Inverse not computed correctly: %#v", inv)
 	}
 }
 

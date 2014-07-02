@@ -112,6 +112,22 @@ func (mat *T) Scaled(f float32) T {
 	return *r.Scale(f)
 }
 
+// Mult multiplies the every element by f returns mat.
+func (mat *T) Mult(f float32) *T {
+	for i, col := range mat {
+		for j := range col {
+			mat[i][j] *= f
+		}
+	}
+	return mat
+}
+
+// Multed returns a copy of the matrix with every element multiplied by f.
+func (mat *T) Multed(f float32) T {
+	r := *mat
+	return *r.Scale(f)
+}
+
 // Trace returns the trace value for the matrix.
 func (mat *T) Trace() float32 {
 	return mat[0][0] + mat[1][1] + mat[2][2] + mat[3][3]
@@ -560,8 +576,45 @@ func (mat *T) Transpose3x3() *T {
 	return mat
 }
 
-//TODO
+// Adjugate computes the adjugate of this matrix and returns mat
+func (mat *T) Adjugate() *T {
+	mat_copy := *mat
+	for i := 0; i < 4; i++ {
+		for j := 0; j < 4; j++ {
+			// - 1 for odd i+j, 1 for even i+j
+			sign := float32(((i + j) % 2)*-2 + 1)
+			mat[i][j] = mat_copy.maskedBlock(i,j).Determinant()*sign
+		}
+	}
+	return mat.Transpose()
+}
+
+// returns a 3x3 matrix without the i-th column and j-th row
+func (mat *T) maskedBlock(block_i, block_j int) *mat3.T {
+	var m mat3.T
+	m_i := 0
+	for i := 0; i < 4; i++ {
+		if i == block_i {
+			continue
+		}
+		m_j := 0
+		for j := 0; j < 4; j++ {
+			if j == block_j {
+				continue
+			}
+			m[m_i][m_j] = mat[i][j]
+			m_j++
+		}
+		m_i++
+	}
+	return &m
+}
+
+// Inverts the given matrix. 
+// Does not check if matrix is singualar and may lead to strange results!
 func (mat *T) Invert() *T {
-	//det := mat.Determinant()
+	initial_det := mat.Determinant()
+	mat.Adjugate()
+	mat.Mult(1/initial_det)
 	return mat
 }
