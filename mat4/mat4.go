@@ -26,7 +26,7 @@ var (
 	}
 )
 
-// T represents a 4x4 matrix.
+// T represents a 4x4 matrix as 4 column vectors.
 type T [4]vec4.T
 
 // From copies a T from a generic.T implementation.
@@ -46,6 +46,7 @@ func From(other generic.T) T {
 }
 
 // Parse parses T from a string. See also String()
+// Assumes the values are given column-wise from left to right.
 func Parse(s string) (r T, err error) {
 	_, err = fmt.Sscan(s,
 		&r[0][0], &r[0][1], &r[0][2], &r[0][3],
@@ -57,6 +58,7 @@ func Parse(s string) (r T, err error) {
 }
 
 // String formats T as string. See also Parse().
+// Prints the values column-wise from left to right.
 func (mat *T) String() string {
 	return fmt.Sprintf("%s %s %s %s", mat[0].String(), mat[1].String(), mat[2].String(), mat[3].String())
 }
@@ -490,12 +492,45 @@ func (mat *T) AssignOrthogonalProjection(left, right, bottom, top, znear, zfar f
 
 // Determinant3x3 returns the determinant of the 3x3 sub-matrix.
 func (mat *T) Determinant3x3() float32 {
-	return mat[0][0]*mat[1][1]*mat[2][2] +
-		mat[1][0]*mat[2][1]*mat[0][2] +
-		mat[2][0]*mat[0][1]*mat[1][2] -
-		mat[2][0]*mat[1][1]*mat[0][2] -
-		mat[1][0]*mat[0][1]*mat[2][2] -
-		mat[0][0]*mat[2][1]*mat[1][2]
+	return 	mat[0][0]*mat[1][1]*mat[2][2] +
+			mat[1][0]*mat[2][1]*mat[0][2] +
+			mat[2][0]*mat[0][1]*mat[1][2] -
+			mat[2][0]*mat[1][1]*mat[0][2] -
+			mat[1][0]*mat[0][1]*mat[2][2] -
+			mat[0][0]*mat[2][1]*mat[1][2]
+}
+
+func (mat *T) Determinant() float32 {
+	s1 := mat[0][0]
+	det1 := 	mat[1][1]*mat[2][2]*mat[3][3] +
+				mat[2][1]*mat[3][2]*mat[1][3] +
+				mat[3][1]*mat[1][2]*mat[2][3] -
+				mat[3][1]*mat[2][2]*mat[1][3] -
+				mat[2][1]*mat[1][2]*mat[3][3] -
+				mat[1][1]*mat[3][2]*mat[2][3]
+		
+	s2 := mat[0][1]
+	det2 :=  	mat[1][0]*mat[2][2]*mat[3][3] +
+				mat[2][0]*mat[3][2]*mat[1][3] +
+				mat[3][0]*mat[1][2]*mat[2][3] -
+				mat[3][0]*mat[2][2]*mat[1][3] -
+				mat[2][0]*mat[1][2]*mat[3][3] -
+				mat[1][0]*mat[3][2]*mat[2][3]
+	s3 := mat[0][2]
+	det3 :=  	mat[1][0]*mat[2][1]*mat[3][3] +
+				mat[2][0]*mat[3][1]*mat[1][3] +
+				mat[3][0]*mat[1][1]*mat[2][3] -
+				mat[3][0]*mat[2][1]*mat[1][3] -
+				mat[2][0]*mat[1][1]*mat[3][3] -
+				mat[1][0]*mat[3][1]*mat[2][3]
+	s4 := mat[0][3]
+	det4 :=  	mat[1][0]*mat[2][1]*mat[3][2] +
+				mat[2][0]*mat[3][1]*mat[1][2] +
+				mat[3][0]*mat[1][1]*mat[2][2] -
+				mat[3][0]*mat[2][1]*mat[1][2] -
+				mat[2][0]*mat[1][1]*mat[3][2] -
+				mat[1][0]*mat[3][1]*mat[2][2]			
+	return s1*det1 - s2*det2 + s3*det3 - s4*det4
 }
 
 // IsReflective returns true if the matrix can be reflected by a plane.
@@ -522,5 +557,11 @@ func (mat *T) Transpose3x3() *T {
 	swap(&mat[1][0], &mat[0][1])
 	swap(&mat[2][0], &mat[0][2])
 	swap(&mat[2][1], &mat[1][2])
+	return mat
+}
+
+//TODO
+func (mat *T) Invert() *T {
+	//det := mat.Determinant()
 	return mat
 }
