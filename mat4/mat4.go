@@ -114,7 +114,7 @@ func (mat *T) Scaled(f float32) T {
 }
 
 // Mult multiplies the every element by f returns mat.
-func (mat *T) Mult(f float32) *T {
+func (mat *T) Mul(f float32) *T {
 	for i, col := range mat {
 		for j := range col {
 			mat[i][j] *= f
@@ -124,9 +124,9 @@ func (mat *T) Mult(f float32) *T {
 }
 
 // Multed returns a copy of the matrix with every element multiplied by f.
-func (mat *T) Multed(f float32) T {
+func (mat *T) Muled(f float32) T {
 	r := *mat
-	return *r.Mult(f)
+	return *r.Mul(f)
 }
 
 // Mult multiplies this matrix with the given matrix m and saves the result in this matrix.
@@ -628,6 +628,6 @@ func (mat *T) maskedBlock(block_i, block_j int) *mat3.T {
 func (mat *T) Invert() *T {
 	initial_det := mat.Determinant()
 	mat.Adjugate()
-	mat.Mult(1/initial_det)
+	mat.Mul(1/initial_det)
 	return mat
 }
