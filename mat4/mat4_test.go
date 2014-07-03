@@ -79,3 +79,60 @@ func TestInvert(t *testing.T) {
 	}
 }
 
+func TestMultSimpleMatrices(t *testing.T) {
+	m1 := T{vec4.T{1, 0, 0, 2}, 
+		   	vec4.T{0, 1, 2, 0}, 
+		   	vec4.T{0, 2, 1, 0}, 
+		  	vec4.T{2, 0, 0, 1}}
+	m2 := m1
+	var mMult T
+	if &m1 == &m2 {
+		t.Error("m1 and m2 point to same matrix!")
+	}
+	mMult.AssignMul(&m1, &m2)
+	t.Log(&m1)
+	t.Log(&m2)
+	m1.MultMatrix(&m2)
+	if m1 != mMult {
+		t.Errorf("Multiplication of matrices above failed, expected: \n%v \ngotten: \n%v", &mMult, &m1)
+	}
+}
+
+func TestMultRandomMatrices(t *testing.T) {
+	m1 := T{vec4.T{0.38016528, -0.0661157, -0.008264462, 0}, 
+		   	vec4.T{-0.19834709, 0.33884296, -0.08264463, 0}, 
+		   	vec4.T{0.11570247, -0.28099173, 0.21487603, 0}, 
+		  	vec4.T{18.958677, -33.471073, 8.066115, 0.99999994}}
+	m2 := T{vec4.T{23, -4, -0.5, -0}, 
+			vec4.T{-12, 20.5, -5, 0}, 
+			vec4.T{7, -17, 13, -0}, 
+			vec4.T{1147, -2025, 488, 60.5}}
+	var mMult T
+	mMult.AssignMul(&m1, &m2)
+	t.Log(&m1)
+	t.Log(&m2)
+	m1.MultMatrix(&m2)
+	if m1 != mMult {
+		t.Errorf("Multiplication of matrices above failed, expected: \n%v \ngotten: \n%v", &mMult, &m1)
+	}
+}
+
+func BenchmarkAssignMul(b *testing.B) {
+	m1 := &T{vec4.T{0.38016528, -0.0661157, -0.008264462, -0}, vec4.T{-0.19834709, 0.33884296, -0.08264463, 0}, vec4.T{0.11570247, -0.28099173, 0.21487603, -0}, vec4.T{18.958677, -33.471073, 8.066115, 0.99999994}}
+	m2 := &T{vec4.T{23, -4, -0.5, -0}, vec4.T{-12, 20.5, -5, 0}, vec4.T{7, -17, 13, -0}, vec4.T{1147, -2025, 488, 60.5}}
+	var mMult T
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		mMult.AssignMul(m1, m2)
+	}
+}
+
+func BenchmarkMultMatrix(b *testing.B) {
+	m1 := &T{vec4.T{0.38016528, -0.0661157, -0.008264462, -0}, vec4.T{-0.19834709, 0.33884296, -0.08264463, 0}, vec4.T{0.11570247, -0.28099173, 0.21487603, -0}, vec4.T{18.958677, -33.471073, 8.066115, 0.99999994}}
+	m2 := &T{vec4.T{23, -4, -0.5, -0}, vec4.T{-12, 20.5, -5, 0}, vec4.T{7, -17, 13, -0}, vec4.T{1147, -2025, 488, 60.5}}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		m1.MultMatrix(m2)
+	}
+}
+
