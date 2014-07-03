@@ -57,10 +57,11 @@ func Parse(s string) (r T, err error) {
 	return r, err
 }
 
-// String formats T as string. See also Parse().
-// Prints the values column-wise from left to right.
+// Returns a string representing the matrix in matlab style.
 func (mat *T) String() string {
-	return fmt.Sprintf("%s %s %s %s", mat[0].String(), mat[1].String(), mat[2].String(), mat[3].String())
+	t := *mat
+	t.Transpose()
+	return fmt.Sprintf("%s;\n %s;\n %s;\n %s;", t[0].String(), t[1].String(), t[2].String(), t[3].String())
 }
 
 // Rows returns the number of rows of the matrix.
