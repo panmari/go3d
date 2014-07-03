@@ -125,9 +125,21 @@ func (mat *T) Mult(f float32) *T {
 // Multed returns a copy of the matrix with every element multiplied by f.
 func (mat *T) Multed(f float32) T {
 	r := *mat
-	return *r.Scale(f)
+	return *r.Mult(f)
 }
 
+// Mult multiplies this matrix with the given matrix m and saves the result in this matrix.
+func (mat *T) MultMatrix(m *T) *T {
+	// iterate over the rows of mat
+	for i := range mat {
+		row := vec4.T{mat[0][i], mat[1][i], mat[2][i], mat[3][i]}
+		mat[0][i] = vec4.Dot4(&row, &m[0])
+		mat[1][i] = vec4.Dot4(&row, &m[1])
+		mat[2][i] = vec4.Dot4(&row, &m[2])
+		mat[3][i] = vec4.Dot4(&row, &m[3])
+	}
+	return mat
+}
 // Trace returns the trace value for the matrix.
 func (mat *T) Trace() float32 {
 	return mat[0][0] + mat[1][1] + mat[2][2] + mat[3][3]
@@ -173,9 +185,9 @@ func (mat *T) AssignMul(a, b *T) *T {
 func (mat *T) MulVec4(v *vec4.T) vec4.T {
 	return vec4.T{
 		mat[0][0]*v[0] + mat[1][0]*v[1] + mat[2][0]*v[2] + mat[3][0]*v[3],
-		mat[0][1]*v[1] + mat[1][1]*v[1] + mat[2][1]*v[2] + mat[3][1]*v[3],
-		mat[0][2]*v[2] + mat[1][2]*v[1] + mat[2][2]*v[2] + mat[3][2]*v[3],
-		mat[0][3]*v[3] + mat[1][3]*v[1] + mat[2][3]*v[2] + mat[3][3]*v[3],
+		mat[0][1]*v[0] + mat[1][1]*v[1] + mat[2][1]*v[2] + mat[3][1]*v[3],
+		mat[0][2]*v[0] + mat[1][2]*v[1] + mat[2][2]*v[2] + mat[3][2]*v[3],
+		mat[0][3]*v[0] + mat[1][3]*v[1] + mat[2][3]*v[2] + mat[3][3]*v[3],
 	}
 }
 
