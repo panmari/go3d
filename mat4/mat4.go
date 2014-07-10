@@ -193,10 +193,13 @@ func (mat *T) MulVec4(v *vec4.T) vec4.T {
 }
 
 // MulVec3 multiplies v with mat with z as fourth component of the vector. 
-func (mat *T) MulVec3(v *vec3.T, z float32) {
-	v[0] = mat[0][0]*v[0] + mat[1][0]*v[1] + mat[2][0]*v[2] + mat[3][0]*z
-	v[1] = mat[0][1]*v[0] + mat[1][1]*v[1] + mat[2][1]*v[2] + mat[3][1]*z
-	v[2] = mat[0][2]*v[0] + mat[1][2]*v[1] + mat[2][2]*v[2] + mat[3][2]*z
+func (mat *T) TransformVec3(v *vec3.T, w float32) {
+	// use intermediate variables to not alter further computations
+	x := mat[0][0]*v[0] + mat[1][0]*v[1] + mat[2][0]*v[2] + mat[3][0]*w
+	y := mat[0][1]*v[0] + mat[1][1]*v[1] + mat[2][1]*v[2] + mat[3][1]*w
+	v[2] = mat[0][2]*v[0] + mat[1][2]*v[1] + mat[2][2]*v[2] + mat[3][2]*w
+	v[0] = x 
+	v[1] = y
 }
 
 // SetTranslation sets the translation elements of the matrix.
