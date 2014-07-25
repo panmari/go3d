@@ -11,6 +11,7 @@ import (
 	"github.com/ungerik/go3d/quaternion"
 	"github.com/ungerik/go3d/vec3"
 	"github.com/ungerik/go3d/vec4"
+	"errors"
 )
 
 var (
@@ -627,10 +628,15 @@ func (mat *T) maskedBlock(block_i, block_j int) *mat3.T {
 }
 
 // Inverts the given matrix. 
-// Does not check if matrix is singualar and may lead to strange results!
-func (mat *T) Invert() *T {
+// In case the matrix is singular, nil and an error is returned,
+// the matrix will remain the same.
+func (mat *T) Invert() (*T, error) {
 	initial_det := mat.Determinant()
+	if initial_det == 0 {
+		return nil, errors.New("Matrix is singular")
+	}
 	mat.Adjugate()
-	mat.Mul(1/initial_det)
-	return mat
+	mat.Mul(1 / initial_det)
+	return mat, nil
 }
+
