@@ -47,7 +47,6 @@ func From(other generic.T) T {
 }
 
 // Parse parses T from a string. See also String()
-// Assumes the values are given column-wise from left to right.
 func Parse(s string) (r T, err error) {
 	_, err = fmt.Sscan(s,
 		&r[0][0], &r[0][1], &r[0][2], &r[0][3],
@@ -110,11 +109,12 @@ func (mat *T) Scale(f float32) *T {
 
 // Scaled returns a copy of the matrix with the diagonal scale elements multiplied by f.
 func (mat *T) Scaled(f float32) T {
-	r := *mat
-	return *r.Scale(f)
+	result := *mat
+	result.Scale(f)
+	return result
 }
 
-// Mult multiplies the every element by f returns mat.
+// Mul multiplies every element by f and returns mat.
 func (mat *T) Mul(f float32) *T {
 	for i, col := range mat {
 		for j := range col {
@@ -124,10 +124,11 @@ func (mat *T) Mul(f float32) *T {
 	return mat
 }
 
-// Multed returns a copy of the matrix with every element multiplied by f.
+// Muled returns a copy of the matrix with every element multiplied by f.
 func (mat *T) Muled(f float32) T {
-	r := *mat
-	return *r.Mul(f)
+	result := *mat
+	result.Mul(f)
+	return result
 }
 
 // Mult multiplies this matrix with the given matrix m and saves the result in this matrix.
@@ -142,6 +143,7 @@ func (mat *T) MultMatrix(m *T) *T {
 	}
 	return mat
 }
+
 // Trace returns the trace value for the matrix.
 func (mat *T) Trace() float32 {
 	return mat[0][0] + mat[1][1] + mat[2][2] + mat[3][3]
@@ -193,7 +195,7 @@ func (mat *T) MulVec4(v *vec4.T) vec4.T {
 	}
 }
 
-// MulVec3 multiplies v with mat with z as fourth component of the vector. 
+// MulVec3 multiplies v with mat with w as fourth component of the vector. 
 func (mat *T) TransformVec3(v *vec3.T, w float32) {
 	// use intermediate variables to not alter further computations
 	x := mat[0][0]*v[0] + mat[1][0]*v[1] + mat[2][0]*v[2] + mat[3][0]*w
@@ -525,44 +527,44 @@ func (mat *T) AssignOrthogonalProjection(left, right, bottom, top, znear, zfar f
 
 // Determinant3x3 returns the determinant of the 3x3 sub-matrix.
 func (mat *T) Determinant3x3() float32 {
-	return 	mat[0][0]*mat[1][1]*mat[2][2] +
-			mat[1][0]*mat[2][1]*mat[0][2] +
-			mat[2][0]*mat[0][1]*mat[1][2] -
-			mat[2][0]*mat[1][1]*mat[0][2] -
-			mat[1][0]*mat[0][1]*mat[2][2] -
-			mat[0][0]*mat[2][1]*mat[1][2]
+	return mat[0][0]*mat[1][1]*mat[2][2] +
+		mat[1][0]*mat[2][1]*mat[0][2] +
+		mat[2][0]*mat[0][1]*mat[1][2] -
+		mat[2][0]*mat[1][1]*mat[0][2] -
+		mat[1][0]*mat[0][1]*mat[2][2] -
+		mat[0][0]*mat[2][1]*mat[1][2]
 }
 
 func (mat *T) Determinant() float32 {
 	s1 := mat[0][0]
-	det1 := 	mat[1][1]*mat[2][2]*mat[3][3] +
-				mat[2][1]*mat[3][2]*mat[1][3] +
-				mat[3][1]*mat[1][2]*mat[2][3] -
-				mat[3][1]*mat[2][2]*mat[1][3] -
-				mat[2][1]*mat[1][2]*mat[3][3] -
-				mat[1][1]*mat[3][2]*mat[2][3]
-		
+	det1 := mat[1][1]*mat[2][2]*mat[3][3] +
+		mat[2][1]*mat[3][2]*mat[1][3] +
+		mat[3][1]*mat[1][2]*mat[2][3] -
+		mat[3][1]*mat[2][2]*mat[1][3] -
+		mat[2][1]*mat[1][2]*mat[3][3] -
+		mat[1][1]*mat[3][2]*mat[2][3]
+
 	s2 := mat[0][1]
-	det2 :=  	mat[1][0]*mat[2][2]*mat[3][3] +
-				mat[2][0]*mat[3][2]*mat[1][3] +
-				mat[3][0]*mat[1][2]*mat[2][3] -
-				mat[3][0]*mat[2][2]*mat[1][3] -
-				mat[2][0]*mat[1][2]*mat[3][3] -
-				mat[1][0]*mat[3][2]*mat[2][3]
+	det2 := mat[1][0]*mat[2][2]*mat[3][3] +
+		mat[2][0]*mat[3][2]*mat[1][3] +
+		mat[3][0]*mat[1][2]*mat[2][3] -
+		mat[3][0]*mat[2][2]*mat[1][3] -
+		mat[2][0]*mat[1][2]*mat[3][3] -
+		mat[1][0]*mat[3][2]*mat[2][3]
 	s3 := mat[0][2]
-	det3 :=  	mat[1][0]*mat[2][1]*mat[3][3] +
-				mat[2][0]*mat[3][1]*mat[1][3] +
-				mat[3][0]*mat[1][1]*mat[2][3] -
-				mat[3][0]*mat[2][1]*mat[1][3] -
-				mat[2][0]*mat[1][1]*mat[3][3] -
-				mat[1][0]*mat[3][1]*mat[2][3]
+	det3 := mat[1][0]*mat[2][1]*mat[3][3] +
+		mat[2][0]*mat[3][1]*mat[1][3] +
+		mat[3][0]*mat[1][1]*mat[2][3] -
+		mat[3][0]*mat[2][1]*mat[1][3] -
+		mat[2][0]*mat[1][1]*mat[3][3] -
+		mat[1][0]*mat[3][1]*mat[2][3]
 	s4 := mat[0][3]
-	det4 :=  	mat[1][0]*mat[2][1]*mat[3][2] +
-				mat[2][0]*mat[3][1]*mat[1][2] +
-				mat[3][0]*mat[1][1]*mat[2][2] -
-				mat[3][0]*mat[2][1]*mat[1][2] -
-				mat[2][0]*mat[1][1]*mat[3][2] -
-				mat[1][0]*mat[3][1]*mat[2][2]			
+	det4 := mat[1][0]*mat[2][1]*mat[3][2] +
+		mat[2][0]*mat[3][1]*mat[1][2] +
+		mat[3][0]*mat[1][1]*mat[2][2] -
+		mat[3][0]*mat[2][1]*mat[1][2] -
+		mat[2][0]*mat[1][1]*mat[3][2] -
+		mat[1][0]*mat[3][1]*mat[2][2]
 	return s1*det1 - s2*det2 + s3*det3 - s4*det4
 }
 
@@ -585,6 +587,13 @@ func (mat *T) Transpose() *T {
 	return mat.Transpose3x3()
 }
 
+// Transposed returns a transposed copy of the matrix.
+func (mat *T) Transposed() T {
+	result := *mat
+	result.Transpose()
+	return result
+}
+
 // Transpose3x3 transposes the 3x3 sub-matrix.
 func (mat *T) Transpose3x3() *T {
 	swap(&mat[1][0], &mat[0][1])
@@ -595,28 +604,35 @@ func (mat *T) Transpose3x3() *T {
 
 // Adjugate computes the adjugate of this matrix and returns mat
 func (mat *T) Adjugate() *T {
-	mat_copy := *mat
+	matOrig := *mat
 	for i := 0; i < 4; i++ {
 		for j := 0; j < 4; j++ {
 			// - 1 for odd i+j, 1 for even i+j
-			sign := float32(((i + j) % 2)*-2 + 1)
-			mat[i][j] = mat_copy.maskedBlock(i,j).Determinant()*sign
+			sign := float32(((i+j)%2)*-2 + 1)
+			mat[i][j] = matOrig.maskedBlock(i, j).Determinant() * sign
 		}
 	}
 	return mat.Transpose()
 }
 
+// Adjugated returns an adjugated copy of the matrix.
+func (mat *T) Adjugated() T {
+	result := *mat
+	result.Adjugate()
+	return result
+}
+
 // returns a 3x3 matrix without the i-th column and j-th row
-func (mat *T) maskedBlock(block_i, block_j int) *mat3.T {
+func (mat *T) maskedBlock(blockI, blockJ int) *mat3.T {
 	var m mat3.T
 	m_i := 0
 	for i := 0; i < 4; i++ {
-		if i == block_i {
+		if i == blockI {
 			continue
 		}
 		m_j := 0
 		for j := 0; j < 4; j++ {
-			if j == block_j {
+			if j == blockJ {
 				continue
 			}
 			m[m_i][m_j] = mat[i][j]
@@ -631,12 +647,16 @@ func (mat *T) maskedBlock(block_i, block_j int) *mat3.T {
 // In case the matrix is singular, nil and an error is returned,
 // the matrix will remain the same.
 func (mat *T) Invert() (*T, error) {
-	initial_det := mat.Determinant()
-	if initial_det == 0 {
-		return nil, errors.New("Matrix is singular")
-	}
+	initialDet := mat.Determinant()
 	mat.Adjugate()
-	mat.Mul(1 / initial_det)
-	return mat, nil
+	mat.Mul(1 / initialDet)
+	return mat
 }
 
+// Inverted returns an inverted copy of the matrix.
+// Does not check if matrix is singualar and may lead to strange results!
+func (mat *T) Inverted() T {
+	result := *mat
+	result.Invert()
+	return result
+}
