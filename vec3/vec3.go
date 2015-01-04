@@ -61,7 +61,7 @@ func Parse(s string) (r T, err error) {
 
 // String formats T as string. See also Parse().
 func (vec *T) String() string {
-	return fmt.Sprintf("%f %f %f", vec[0], vec[1], vec[2])
+	return fmt.Sprint(vec[0], vec[1], vec[2])
 }
 
 // Rows returns the number of rows of the vector.
@@ -81,7 +81,7 @@ func (vec *T) Size() int {
 
 // Slice returns the elements of the vector as slice.
 func (vec *T) Slice() []float32 {
-	return []float32{vec[0], vec[1], vec[2]}
+	return vec[:]
 }
 
 // Get returns one element of the vector.
@@ -129,6 +129,19 @@ func (vec *T) Invert() *T {
 // Inverted returns an inverted copy of the vector.
 func (vec *T) Inverted() T {
 	return T{-vec[0], -vec[1], -vec[2]}
+}
+
+// Abs sets every component of the vector to its absolute value.
+func (vec *T) Abs() *T {
+	vec[0] = math.Abs(vec[0])
+	vec[1] = math.Abs(vec[1])
+	vec[2] = math.Abs(vec[2])
+	return vec
+}
+
+// Absed returns a copy of the vector containing the absolute values.
+func (vec *T) Absed() T {
+	return T{math.Abs(vec[0]), math.Abs(vec[1]), math.Abs(vec[2])}
 }
 
 // Normalize normalizes the vector to unit length.
@@ -184,6 +197,18 @@ func (vec *T) Mul(v *T) *T {
 // Add returns the sum of two vectors.
 func Add(a, b *T) T {
 	return T{a[0] + b[0], a[1] + b[1], a[2] + b[2]}
+}
+
+// Squared Distance between two vectors
+func SquareDistance(a, b *T) float32 {
+	d := Sub(a, b)
+	return d.LengthSqr()
+}
+
+// Distance between two vectors
+func Distance(a, b *T) float32 {
+	d := Sub(a, b)
+	return d.Length()
 }
 
 // Sub returns the difference of two vectors.

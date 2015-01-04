@@ -72,10 +72,7 @@ func (mat *T) Size() int {
 
 // Slice returns the elements of the matrix as slice.
 func (mat *T) Slice() []float64 {
-	return []float64{
-		mat[0][0], mat[0][1],
-		mat[1][0], mat[1][1],
-	}
+	return mat.Array()[:]
 }
 
 // Get returns one element of the matrix.

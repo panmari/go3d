@@ -10,8 +10,8 @@ import (
 
 var (
 	// Zero holds a zero matrix.
-	Zero  = T{}
-	
+	Zero = T{}
+
 	// Ident holds an ident matrix.
 	Ident = T{
 		vec2.T{1, 0},
@@ -71,11 +71,9 @@ func (mat *T) Size() int {
 }
 
 // Slice returns the elements of the matrix as slice.
+// The data may be a copy depending on the platform implementation.
 func (mat *T) Slice() []float32 {
-	return []float32{
-		mat[0][0], mat[0][1],
-		mat[1][0], mat[1][1],
-	}
+	return mat.Array()[:]
 }
 
 // Get returns one element of the matrix.

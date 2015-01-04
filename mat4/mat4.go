@@ -47,6 +47,7 @@ func From(other generic.T) T {
 }
 
 // Parse parses T from a string. See also String()
+// Assumes the values are given column-wise from left to right.
 func Parse(s string) (r T, err error) {
 	_, err = fmt.Sscan(s,
 		&r[0][0], &r[0][1], &r[0][2], &r[0][3],
@@ -81,12 +82,7 @@ func (mat *T) Size() int {
 
 // Slice returns the elements of the matrix as slice.
 func (mat *T) Slice() []float32 {
-	return []float32{
-		mat[0][0], mat[0][1], mat[0][2], mat[0][3],
-		mat[1][0], mat[1][1], mat[1][2], mat[1][3],
-		mat[2][0], mat[2][1], mat[2][2], mat[2][3],
-		mat[3][0], mat[3][1], mat[3][2], mat[3][3],
-	}
+	return mat.Array()[:]
 }
 
 // Get returns one element of the matrix.
@@ -193,6 +189,13 @@ func (mat *T) MulVec4(v *vec4.T) vec4.T {
 		mat[0][2]*v[0] + mat[1][2]*v[1] + mat[2][2]*v[2] + mat[3][2]*v[3],
 		mat[0][3]*v[0] + mat[1][3]*v[1] + mat[2][3]*v[2] + mat[3][3]*v[3],
 	}
+}
+
+// MulVec3 multiplies v with mat and divides the result by w.
+func (mat *T) MulVec3(v *vec3.T) vec3.T {
+	v4 := vec4.FromVec3(v)
+	v4 = mat.MulVec4(&v4)
+	return v4.Vec3DividedByW()
 }
 
 // MulVec3 multiplies v with mat with w as fourth component of the vector. 
@@ -538,32 +541,32 @@ func (mat *T) Determinant3x3() float32 {
 func (mat *T) Determinant() float32 {
 	s1 := mat[0][0]
 	det1 := mat[1][1]*mat[2][2]*mat[3][3] +
-		mat[2][1]*mat[3][2]*mat[1][3] +
-		mat[3][1]*mat[1][2]*mat[2][3] -
-		mat[3][1]*mat[2][2]*mat[1][3] -
-		mat[2][1]*mat[1][2]*mat[3][3] -
-		mat[1][1]*mat[3][2]*mat[2][3]
-
+				mat[2][1]*mat[3][2]*mat[1][3] +
+				mat[3][1]*mat[1][2]*mat[2][3] -
+				mat[3][1]*mat[2][2]*mat[1][3] -
+				mat[2][1]*mat[1][2]*mat[3][3] -
+				mat[1][1]*mat[3][2]*mat[2][3]
+		
 	s2 := mat[0][1]
 	det2 := mat[1][0]*mat[2][2]*mat[3][3] +
-		mat[2][0]*mat[3][2]*mat[1][3] +
-		mat[3][0]*mat[1][2]*mat[2][3] -
-		mat[3][0]*mat[2][2]*mat[1][3] -
-		mat[2][0]*mat[1][2]*mat[3][3] -
-		mat[1][0]*mat[3][2]*mat[2][3]
+				mat[2][0]*mat[3][2]*mat[1][3] +
+				mat[3][0]*mat[1][2]*mat[2][3] -
+				mat[3][0]*mat[2][2]*mat[1][3] -
+				mat[2][0]*mat[1][2]*mat[3][3] -
+				mat[1][0]*mat[3][2]*mat[2][3]
 	s3 := mat[0][2]
 	det3 := mat[1][0]*mat[2][1]*mat[3][3] +
-		mat[2][0]*mat[3][1]*mat[1][3] +
-		mat[3][0]*mat[1][1]*mat[2][3] -
-		mat[3][0]*mat[2][1]*mat[1][3] -
-		mat[2][0]*mat[1][1]*mat[3][3] -
-		mat[1][0]*mat[3][1]*mat[2][3]
+				mat[2][0]*mat[3][1]*mat[1][3] +
+				mat[3][0]*mat[1][1]*mat[2][3] -
+				mat[3][0]*mat[2][1]*mat[1][3] -
+				mat[2][0]*mat[1][1]*mat[3][3] -
+				mat[1][0]*mat[3][1]*mat[2][3]
 	s4 := mat[0][3]
 	det4 := mat[1][0]*mat[2][1]*mat[3][2] +
-		mat[2][0]*mat[3][1]*mat[1][2] +
-		mat[3][0]*mat[1][1]*mat[2][2] -
-		mat[3][0]*mat[2][1]*mat[1][2] -
-		mat[2][0]*mat[1][1]*mat[3][2] -
+				mat[2][0]*mat[3][1]*mat[1][2] +
+				mat[3][0]*mat[1][1]*mat[2][2] -
+				mat[3][0]*mat[2][1]*mat[1][2] -
+				mat[2][0]*mat[1][1]*mat[3][2] -
 		mat[1][0]*mat[3][1]*mat[2][2]
 	return s1*det1 - s2*det2 + s3*det3 - s4*det4
 }
@@ -574,9 +577,7 @@ func (mat *T) IsReflective() bool {
 }
 
 func swap(a, b *float32) {
-	temp := *a
-	*a = *b
-	*b = temp
+	*a, *b = *b, *a
 }
 
 // Transpose transposes the matrix.
@@ -643,10 +644,9 @@ func (mat *T) maskedBlock(blockI, blockJ int) *mat3.T {
 	return &m
 }
 
-// Inverts the given matrix. 
-// In case the matrix is singular, nil and an error is returned,
-// the matrix will remain the same.
-func (mat *T) Invert() (*T, error) {
+// Inverts the given matrix.
+// Does not check if matrix is singualar and may return invalid results.
+func (mat *T) Invert() *T {
 	initialDet := mat.Determinant()
 	mat.Adjugate()
 	mat.Mul(1 / initialDet)
