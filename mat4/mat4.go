@@ -11,7 +11,6 @@ import (
 	"github.com/ungerik/go3d/quaternion"
 	"github.com/ungerik/go3d/vec3"
 	"github.com/ungerik/go3d/vec4"
-	"errors"
 )
 
 var (
